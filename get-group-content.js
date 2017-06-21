@@ -8,6 +8,31 @@ function errorHandler(error, response, context){
   }
 }
 
+function filterContentsFiled(contents) {
+  return contents.list.map(function (content) {
+    delete content["resources"];
+    delete content["outcomeTypes"];
+    delete content.author["resources"];
+    delete content.author["followerCount"];
+    delete content.author["followed"];
+    delete content.author["published"];
+    delete content.author["updated"];
+    delete content.author["followingCount"];
+    delete content.author["jive"];
+    delete content.author["phoneNumbers"];
+    delete content.author["photos"];
+    delete content.author["thumbnailId"];
+    delete content.author["thumbnailUrl"];
+    delete content.author["initialLogin"];
+    delete content.author["type"];
+    delete content.author["typeCode"];
+    content.author.emails = content.author.emails.filter(function (email) {
+      return email.type === 'work'
+    });
+    return content;
+  });
+}
+
 function getContents(result, context) {
   request({
     uri: 'https://thoughtworks-preview.jiveon.com/api/core/v3/places/' + result.list[0].placeID + '/contents',
@@ -16,7 +41,8 @@ function getContents(result, context) {
     }
   }, function (error, response, body) {
     errorHandler(error, response, context);
-    context.succeed(JSON.parse(body));
+    var contents = filterContentsFiled(JSON.parse(body));
+    context.succeed(contents);
   });
 }
 
