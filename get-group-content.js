@@ -1,25 +1,22 @@
 var request = require('request');
-var Buffer = require('buffer').Buffer;
-var auth = 'Basic ' + new Buffer('username:password').toString('base64');
-
 
 exports.handler = function(event, context) {
-  console.log('place id', event.placeId);
-  var jiveApiUrl = 'https://thoughtworks-preview.jiveon.com/api/core/v3/places/' + event.placeId + '/contents';
-
+  var searchGroup = 'https://thoughtworks-preview.jiveon.com/api/core/v3/search/places?filter=search(' + event.groupName+ ')';
+  var auth = '';
   var options = {
-    uri: jiveApiUrl,
+    uri: searchGroup,
     headers: {
       'Authorization': auth
     }
   };
 
   request(options, function (error, response, body) {
-    if (error !== null) {
+    if (error !== null || response.statusCode !== 200) {
       console.log('error:', error);
       context.done(null, 'FAILURE');
     }
-    context.succeed(body);
+    var result = JSON.parse(body);
+    context.succeed(result.list.length);
     console.log('statusCode:', response && response.statusCode);
 
   });
