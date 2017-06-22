@@ -58,9 +58,14 @@ exports.handler = function(event, context) {
   request(options, function (error, response, body) {
     errorHandler(error, response, context);
     var result = JSON.parse(body);
-    if (result.list.length > 1) {
-      context.done(result.list, 'There are many groups');
+    if(result.list.length === 0 ) {
+      context.done(null, 'There is no group');
+    } else if (result.list.length > 1) {
+      context.done(JSON.stringify(result.list), 'There are many groups');
     } else {
+      if (result.list[0].groupTypeV2 !== 'PUBLIC') {
+        context.done(null, 'There is no public group');
+      }
       console.log('place id', result.list[0].placeID);
       getContents(result, context);
     }
