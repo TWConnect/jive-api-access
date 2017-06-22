@@ -2,9 +2,11 @@ var request = require('request');
 var auth = '';
 
 function errorHandler(error, response, context){
-  if (error !== null || response.statusCode !== 200) {
-    console.log('error:', error);
-    context.done(null, 'FAILURE');
+  if (error !== null) {
+    context.fail(error);
+  }
+  if (response.statusCode !== 200) {
+    context.fail(response);
   }
 }
 
@@ -47,7 +49,8 @@ function getContents(result, context) {
 }
 
 exports.handler = function(event, context) {
-  var searchGroup = 'https://thoughtworks-preview.jiveon.com/api/core/v3/search/places?filter=search(' + event.groupName+ ')';
+  var groupName = event.params.querystring.groupName;
+  var searchGroup = 'https://thoughtworks-preview.jiveon.com/api/core/v3/search/places?filter=nameonly&filter=type(group)&filter=search(' + groupName + ')';
   var options = {
     uri: searchGroup,
     headers: {
@@ -59,12 +62,15 @@ exports.handler = function(event, context) {
     errorHandler(error, response, context);
     var result = JSON.parse(body);
     if(result.list.length === 0 ) {
-      context.done(null, 'There is no group');
+      context.fail('There is no group');
     } else if (result.list.length > 1) {
-      context.done(JSON.stringify(result.list), 'There are many groups');
+      var groupNameArray = result.list.map(function (group) {
+        return group.name;
+      });
+      context.fail('There are many groups, please choose one. ' + JSON.stringify(groupNameArray));
     } else {
       if (result.list[0].groupTypeV2 !== 'PUBLIC') {
-        context.done(null, 'There is no public group');
+        context.fail('There is no public group');
       }
       console.log('place id', result.list[0].placeID);
       getContents(result, context);
