@@ -1,5 +1,12 @@
 var request = require('request');
 var auth = '';
+var jiveApiUrl = 'https://thoughtworks-preview.jiveon.com/api/core/v3';
+var serverUrl = 'https://eswqegmop4.execute-api.us-east-1.amazonaws.com/prod';
+
+String.prototype.replaceAll = function(search, replacement) {
+  var target = this;
+  return target.replace(new RegExp(search, 'g'), replacement);
+};
 
 function errorHandler(error, response, context){
   if (error !== null) {
@@ -37,20 +44,22 @@ function filterContentsFiled(contents) {
 
 function getContents(result, context) {
   request({
-    uri: 'https://thoughtworks-preview.jiveon.com/api/core/v3/places/' + result.list[0].placeID + '/contents',
+    uri: jiveApiUrl + '/places/' + result.list[0].placeID + '/contents',
     headers: {
       'Authorization': auth
     }
   }, function (error, response, body) {
     errorHandler(error, response, context);
-    var contents = filterContentsFiled(JSON.parse(body));
-    context.succeed(contents);
+    body = body.replaceAll(jiveApiUrl, serverUrl);
+    var result = JSON.parse(body);
+    result.list = filterContentsFiled(result);
+    context.succeed(result);
   });
 }
 
 exports.handler = function(event, context) {
   var groupName = event.params.querystring.groupName;
-  var searchGroup = 'https://thoughtworks-preview.jiveon.com/api/core/v3/search/places?filter=nameonly&filter=type(group)&filter=search(' + groupName + ')';
+  var searchGroup = jiveApiUrl + '/search/places?filter=nameonly&filter=type(group)&filter=search(' + groupName + ')';
   var options = {
     uri: searchGroup,
     headers: {
