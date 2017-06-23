@@ -71,16 +71,16 @@ exports.handler = function (event, context) {
         errorHandler(error, response, context);
         var result = JSON.parse(body);
         if (result.list.length <= 0) {
-            context.fail('There is no group');
+            context.fail('No group found');
         } else {
             var groupArray = result.list.filter((group) => group.groupTypeV2 === 'PUBLIC');
 
             var groupNameArray = groupArray.map((group) => group.name);
 
             if (groupArray.length === 0) {
-                context.fail('There is no public group');
+                context.fail('No access to private group');
             } else if (groupArray.length > 1) {
-                context.fail('There are many groups, please choose one. ' + JSON.stringify(groupNameArray));
+                context.fail('Multiple search results, please choose one. ' + JSON.stringify(groupNameArray));
             } else {
                 console.log('place id', groupArray);
                 getContents(groupArray[0].placeID, context);
