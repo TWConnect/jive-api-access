@@ -17,7 +17,7 @@ function errorHandler(error, response, context) {
     }
 }
 
-function filterContentsFiled(contents) {
+function filterContentsField(contents) {
     return contents.list.map(function (content) {
         delete content["resources"];
         delete content["outcomeTypes"];
@@ -52,7 +52,7 @@ function getContents(placeID, context) {
         errorHandler(error, response, context);
         body = body.replaceAll(jiveApiUrl, serverUrl);
         var result = JSON.parse(body);
-        result.list = filterContentsFiled(result);
+        result.list = filterContentsField(result);
         context.succeed(result);
     });
 }
@@ -70,10 +70,10 @@ exports.handler = function (event, context) {
     request(options, function (error, response, body) {
         errorHandler(error, response, context);
         var result = JSON.parse(body);
-        if (result.list.length <= 0) {
+        if (result.list.length === 0) {
             context.fail('No group found');
         } else {
-            var groupArray = result.list.filter((group) => group.groupTypeV2 === 'PUBLIC');
+            var groupArray = result.list.filter((group) => group.groupTypeV2 === 'PUBLIC' || group.groupTypeV2 === 'PUBLIC_RESTRICTED');
 
             var groupNameArray = groupArray.map((group) => group.name);
 
@@ -82,7 +82,7 @@ exports.handler = function (event, context) {
             } else if (groupArray.length > 1) {
                 context.fail('Multiple search results, please choose one. ' + JSON.stringify(groupNameArray));
             } else {
-                console.log('place id', groupArray);
+                console.log('group info', groupArray[0]);
                 getContents(groupArray[0].placeID, context);
             }
             console.log('statusCode:', response && response.statusCode);
