@@ -1,5 +1,6 @@
 var request = require('request');
-var auth = '';
+var Buffer = require('buffer').Buffer;
+var auth = 'Basic ' + new Buffer(process.env.username + ':' + process.env.password).toString('base64');
 var jiveApiUrl = 'https://thoughtworks-preview.jiveon.com/api/core/v3';
 var serverUrl = 'https://eswqegmop4.execute-api.us-east-1.amazonaws.com/prod';
 
