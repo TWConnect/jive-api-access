@@ -44,9 +44,9 @@ function filterContentsField(contents) {
     });
 }
 
-function getContents(placeID, context) {
+function getContents(placeID, context, startIndex, count) {
     request({
-        uri: jiveApiUrl + '/places/' + placeID + '/contents',
+        uri: jiveApiUrl + '/places/' + placeID + '/contents?abridged=true&startIndex=' + startIndex + '&count=' + count,
         headers: {
             'Authorization': auth
         }
@@ -61,6 +61,8 @@ function getContents(placeID, context) {
 
 exports.handler = function (event, context) {
     var groupName = event.params.querystring.groupName;
+    var startIndex = event.params.querystring.startIndex || 0;
+    var count = event.params.querystring.count || 25;
     var searchGroup = jiveApiUrl + '/search/places?filter=nameonly&filter=type(group)&filter=search(' + groupName + ')';
     var options = {
         uri: searchGroup,
@@ -85,7 +87,7 @@ exports.handler = function (event, context) {
                 context.fail('Multiple search results, please choose one. ' + JSON.stringify(groupNameArray));
             } else {
                 console.log('group info', groupArray[0]);
-                getContents(groupArray[0].placeID, context);
+                getContents(groupArray[0].placeID, context, startIndex, count);
             }
             console.log('statusCode:', response && response.statusCode);
         }
