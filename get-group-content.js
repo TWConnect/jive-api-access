@@ -22,6 +22,7 @@ function filterContentsField(contents) {
     return contents.list.map(function (content) {
         delete content["resources"];
         delete content["outcomeTypes"];
+        delete content["onBehalfOf"];
         delete content.author["resources"];
         delete content.author["followerCount"];
         delete content.author["followed"];
